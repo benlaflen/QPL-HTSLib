@@ -620,6 +620,7 @@ int bgzf_compress(void *_dst, size_t *dlen, const void *src, size_t slen, int le
     uint32_t crc;
     z_stream zs;
     uint8_t *dst = (uint8_t*)_dst;
+    cout<<"Printing with block compression\n";
 
     if (level == 0) {
     uncomp:
@@ -679,6 +680,7 @@ int bgzf_compress(void *_dst, size_t *dlen, const void *src, size_t slen, int le
 
 static int bgzf_gzip_compress(BGZF *fp, void *_dst, size_t *dlen, const void *src, size_t slen, int level)
 {
+    cout<<"Printing with GZIP\n";
     uint8_t *dst = (uint8_t*)_dst;
     z_stream *zs = fp->gz_stream;
     int flush = slen ? Z_PARTIAL_FLUSH : Z_FINISH;
