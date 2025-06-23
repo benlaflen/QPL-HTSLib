@@ -35,10 +35,10 @@ CPPFLAGS =
 # TODO: probably update cram code to make it compile cleanly with -Wc++-compat
 # For testing strict C99 support add -std=c99 -D_XOPEN_SOURCE=600
 #CFLAGS   = -g -Wall -O2 -pedantic -std=c99 -D_XOPEN_SOURCE=600
-CFLAGS   = -g -Wall -O2 -fvisibility=hidden
+CFLAGS   = -g -Wall -O2 -fvisibility=hidden -fprofile-arcs -ftest-coverage
 EXTRA_CFLAGS_PIC = -fpic
 TARGET_CFLAGS =
-LDFLAGS  = -fvisibility=hidden
+LDFLAGS  = -fvisibility=hidden -fprofile-arcs -ftest-coverage -g
 VERSION_SCRIPT_LDFLAGS = -Wl,-version-script,$(srcprefix)htslib.map
 LIBS     = $(htslib_default_libs)
 
@@ -389,9 +389,9 @@ endif
 plugins: $(BUILT_PLUGINS)
 
 
-libhts.a: $(LIBHTS_OBJS)
+libhts.a: $(LIBHTS_OBJS) qpl_deflate.o
 	@-rm -f $@
-	$(AR) -rc $@ $(LIBHTS_OBJS)
+	$(AR) -rc $@ $(LIBHTS_OBJS) qpl_deflate.o
 	-$(RANLIB) $@
 
 print-config:
@@ -552,8 +552,11 @@ htscodecs/htscodecs/rANS_static32x16pr_avx2.o htscodecs/htscodecs/rANS_static32x
 htscodecs/htscodecs/rANS_static32x16pr_avx512.o htscodecs/htscodecs/rANS_static32x16pr_avx512.pico: TARGET_CFLAGS = $(HTS_CFLAGS_AVX512)
 htscodecs/htscodecs/rANS_static32x16pr_sse4.o htscodecs/htscodecs/rANS_static32x16pr_sse4.pico: TARGET_CFLAGS = $(HTS_CFLAGS_SSE4)
 
+qpl_deflate.o: qpl_deflate.c qpl_deflate.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o qpl_deflate.o qpl_deflate.c
+
 annot-tsv: annot-tsv.o libhts.a
-	$(CC) $(LDFLAGS) -o $@ annot-tsv.o libhts.a $(LIBS) -lpthread
+	$(CC) $(LDFLAGS) -o $@ annot-tsv.o libhts.a $(LIBS) -llzma -lbz2 -lz -lm -lqpl -lcurl -lcrypto -lpthread
 
 bgzip: bgzip.o libhts.a
 	$(CC) $(LDFLAGS) -o $@ bgzip.o libhts.a $(LIBS) -lpthread
