@@ -48,6 +48,7 @@
 #include "htslib/hts_endian.h"
 #include "cram/pooled_alloc.h"
 #include "hts_internal.h"
+#include "qpl-deflate.h"
 
 #ifndef EFTYPE
 #define EFTYPE ENOEXEC
@@ -639,14 +640,17 @@ int bgzf_compress(void *_dst, size_t *dlen, const void *src, size_t slen, int le
         zs.avail_in = slen;
         zs.next_out = dst + BLOCK_HEADER_LENGTH;
         zs.avail_out = *dlen - BLOCK_HEADER_LENGTH - BLOCK_FOOTER_LENGTH;
-        int ret = deflateInit2(&zs, level, Z_DEFLATED, -15, 8, Z_DEFAULT_STRATEGY); // -15 to disable zlib header/footer
+//        int ret = deflateInit2(&zs, level, Z_DEFLATED, -15, 8, Z_DEFAULT_STRATEGY); // -15 to disable zlib header/footer
+        int ret = qpl_deflate_init(&zs, level, Z_DEFLATED, -15, 8, Z_DEFAULT_STRATEGY);
         if (ret!=Z_OK) {
             hts_log_error("Call to deflateInit2 failed: %s", bgzf_zerr(ret, &zs));
             return -1;
         }
-        if ((ret = deflate(&zs, Z_FINISH)) != Z_STREAM_END) {
+//        if ((ret = deflate(&zs, Z_FINISH)) != Z_STREAM_END) {
+        if ((ret = qpl_deflate_run(&zs, Z_FINISH)) != Z_STREAM_END) {
             if (ret == Z_OK && zs.avail_out == 0) {
-                deflateEnd(&zs);
+//                deflateEnd(&zs);
+                qpl_deflate_end(&zs);
                 goto uncomp;
             } else {
                 hts_log_error("Deflate operation failed: %s", bgzf_zerr(ret, ret == Z_DATA_ERROR ? &zs : NULL));
@@ -657,10 +661,12 @@ int bgzf_compress(void *_dst, size_t *dlen, const void *src, size_t slen, int le
         // room or we *just* fitted, but either way we may as well store
         // uncompressed for faster decode.
         if (zs.avail_out == 0) {
-            deflateEnd(&zs);
+ //           deflateEnd(&zs);
+            qpl_deflate_end(&zs);
             goto uncomp;
         }
-        if ((ret = deflateEnd(&zs)) != Z_OK) {
+//        if ((ret = deflateEnd(&zs)) != Z_OK) {
+        if((ret = qpl_deflate_end(&zs)) != Z_OK) {
             hts_log_error("Call to deflateEnd failed: %s", bgzf_zerr(ret, NULL));
             return -1;
         }
