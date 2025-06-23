@@ -36,7 +36,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
     job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST |
                  QPL_FLAG_DYNAMIC_HUFFMAN |
                  QPL_FLAG_OMIT_VERIFY |
-                 QPL_FLAG_GZIP_MODE;
+   //              QPL_FLAG_GZIP_MODE;
 
     qpl_status status = qpl_execute_job(job);
     if (status != QPL_STS_OK) {
