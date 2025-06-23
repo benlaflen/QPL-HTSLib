@@ -48,7 +48,7 @@
 #include "htslib/hts_endian.h"
 #include "cram/pooled_alloc.h"
 #include "hts_internal.h"
-#include "qpl-deflate.h"
+#include "qpl_deflate.h"
 
 #ifndef EFTYPE
 #define EFTYPE ENOEXEC
@@ -619,7 +619,7 @@ uint32_t hts_crc32(uint32_t crc, const void *buf, size_t len) {
 int bgzf_compress(void *_dst, size_t *dlen, const void *src, size_t slen, int level)
 {
     uint32_t crc;
-    z_stream zs;
+    qpl_deflate_stream stream;
     uint8_t *dst = (uint8_t*)_dst;
     printf("Printing with block compression\n");
 
@@ -634,7 +634,6 @@ int bgzf_compress(void *_dst, size_t *dlen, const void *src, size_t slen, int le
         *dlen = slen+5 + BLOCK_HEADER_LENGTH + BLOCK_FOOTER_LENGTH;
     } else {
         // QPL compression
-        qpl_deflate_stream stream;
         int ret = qpl_deflate_init(&stream);
         if (ret != QPL_STS_OK) {
             hts_log_error("qpl_deflate_init failed: %d", ret);
