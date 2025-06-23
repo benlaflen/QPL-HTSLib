@@ -633,44 +633,34 @@ int bgzf_compress(void *_dst, size_t *dlen, const void *src, size_t slen, int le
         memcpy(dst + BLOCK_HEADER_LENGTH+5, src, slen);
         *dlen = slen+5 + BLOCK_HEADER_LENGTH + BLOCK_FOOTER_LENGTH;
     } else {
-        // compress the body
-        zs.zalloc = NULL; zs.zfree = NULL;
-        zs.msg = NULL;
-        zs.next_in  = (Bytef*)src;
-        zs.avail_in = slen;
-        zs.next_out = dst + BLOCK_HEADER_LENGTH;
-        zs.avail_out = *dlen - BLOCK_HEADER_LENGTH - BLOCK_FOOTER_LENGTH;
-//        int ret = deflateInit2(&zs, level, Z_DEFLATED, -15, 8, Z_DEFAULT_STRATEGY); // -15 to disable zlib header/footer
-        int ret = qpl_deflate_init(&zs, level, Z_DEFLATED, -15, 8, Z_DEFAULT_STRATEGY);
-        if (ret!=Z_OK) {
-            hts_log_error("Call to deflateInit2 failed: %s", bgzf_zerr(ret, &zs));
+        // QPL compression
+        qpl_deflate_stream stream;
+        int ret = qpl_deflate_init(&stream);
+        if (ret != QPL_STS_OK) {
+            hts_log_error("qpl_deflate_init failed: %d", ret);
             return -1;
         }
-//        if ((ret = deflate(&zs, Z_FINISH)) != Z_STREAM_END) {
-        if ((ret = qpl_deflate_run(&zs, Z_FINISH)) != Z_STREAM_END) {
-            if (ret == Z_OK && zs.avail_out == 0) {
-//                deflateEnd(&zs);
-                qpl_deflate_end(&zs);
-                goto uncomp;
-            } else {
-                hts_log_error("Deflate operation failed: %s", bgzf_zerr(ret, ret == Z_DATA_ERROR ? &zs : NULL));
-            }
+
+        size_t out_len = 0;
+        ret = qpl_deflate_run(&stream,
+                              src, slen,
+                              dst + BLOCK_HEADER_LENGTH,
+                              *dlen - BLOCK_HEADER_LENGTH - BLOCK_FOOTER_LENGTH,
+                              &out_len);
+        if (ret != QPL_STS_OK) {
+            qpl_deflate_end(&stream);
+            hts_log_error("qpl_deflate_run failed: %d", ret);
             return -1;
         }
-        // If we used up the entire output buffer, then we either ran out of
-        // room or we *just* fitted, but either way we may as well store
-        // uncompressed for faster decode.
-        if (zs.avail_out == 0) {
- //           deflateEnd(&zs);
-            qpl_deflate_end(&zs);
+
+        // If we used up the entire output buffer, fallback to uncompressed
+        if (out_len == (*dlen - BLOCK_HEADER_LENGTH - BLOCK_FOOTER_LENGTH)) {
+            qpl_deflate_end(&stream);
             goto uncomp;
         }
-//        if ((ret = deflateEnd(&zs)) != Z_OK) {
-        if((ret = qpl_deflate_end(&zs)) != Z_OK) {
-            hts_log_error("Call to deflateEnd failed: %s", bgzf_zerr(ret, NULL));
-            return -1;
-        }
-        *dlen = zs.total_out + BLOCK_HEADER_LENGTH + BLOCK_FOOTER_LENGTH;
+
+        qpl_deflate_end(&stream);
+        *dlen = out_len + BLOCK_HEADER_LENGTH + BLOCK_FOOTER_LENGTH;
     }
 
     // write the header
