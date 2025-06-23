@@ -653,7 +653,7 @@ int bgzf_compress(void *_dst, size_t *dlen, const void *src, size_t slen, int le
         }
 
         // If we used up the entire output buffer, fallback to uncompressed
-        if (out_len == (*dlen - BLOCK_HEADER_LENGTH - BLOCK_FOOTER_LENGTH)) {
+        if (out_len == (*dlen - BLOCK_HEADER_LENGTH - BLOCK_FOOTER_LENGTH) || out_len == 0) {
             qpl_deflate_end(&stream);
             goto uncomp;
         }
