@@ -624,6 +624,7 @@ int bgzf_compress(void *_dst, size_t *dlen, const void *src, size_t slen, int le
 
     if (level == 0) {
     uncomp:
+        printf("Writing uncompressed data agh");
         // Uncompressed data
         if (*dlen < slen+5 + BLOCK_HEADER_LENGTH + BLOCK_FOOTER_LENGTH) return -1;
         dst[BLOCK_HEADER_LENGTH] = 1; // BFINAL=1, BTYPE=00; see RFC1951
