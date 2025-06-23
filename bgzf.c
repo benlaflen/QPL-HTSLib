@@ -662,7 +662,7 @@ int bgzf_compress(void *_dst, size_t *dlen, const void *src, size_t slen, int le
     }
 
     // write the header
-    printf("Final dlen: %un\n", *dlen);
+    printf("Final dlen: %lu\n", *dlen);
     memcpy(dst, g_magic, BLOCK_HEADER_LENGTH); // the last two bytes are a place holder for the length of the block
     packInt16(&dst[16], *dlen - 1); // write the compressed length; -1 to fit 2 bytes
     // write the footer
