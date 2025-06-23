@@ -34,7 +34,10 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
                  QPL_FLAG_GZIP_MODE;
 
     qpl_status status = qpl_execute_job(job);
-    if (status != QPL_STS_OK) return -1;
+    if (status != QPL_STS_OK) {
+        printf(qpl_status);
+        return -1;
+    }
 
     *compressed_size = job->total_out;
     return 0;

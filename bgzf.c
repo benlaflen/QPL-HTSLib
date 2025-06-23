@@ -621,7 +621,6 @@ int bgzf_compress(void *_dst, size_t *dlen, const void *src, size_t slen, int le
     uint32_t crc;
     qpl_deflate_stream stream;
     uint8_t *dst = (uint8_t*)_dst;
-    printf("Printing with block compression\n");
 
     if (level == 0) {
     uncomp:
