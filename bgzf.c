@@ -664,6 +664,10 @@ int bgzf_compress(void *_dst, size_t *dlen, const void *src, size_t slen, int le
     // write the header
     memcpy(dst, g_magic, BLOCK_HEADER_LENGTH); // the last two bytes are a place holder for the length of the block
     packInt16(&dst[16], *dlen - 1); // write the compressed length; -1 to fit 2 bytes
+    printf("compressed block (hex): ");
+    for (size_t i = 0; i < out_len && i < 32; ++i)
+        printf("%02x ", dst[BLOCK_HEADER_LENGTH + i]);
+    printf("\n");
     // write the footer
     crc = crc32(crc32(0L, NULL, 0L), (Bytef*)src, slen);
     packInt32((uint8_t*)&dst[*dlen - 8], crc);

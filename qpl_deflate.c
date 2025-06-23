@@ -35,10 +35,14 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
 
     job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST |
                  QPL_FLAG_DYNAMIC_HUFFMAN |
-                 QPL_FLAG_OMIT_VERIFY;// |
+                 QPL_FLAG_GEN_LITERALS;//QPL_FLAG_OMIT_VERIFY;// |
    //              QPL_FLAG_GZIP_MODE;
 
     qpl_status status = qpl_execute_job(job);
+    printf("job->total_in  = %u\n", job->total_in);
+    printf("job->total_out = %u\n", job->total_out);
+    printf("job->available_in  = %u\n", job->available_in);
+    printf("job->available_out = %u\n", job->available_out);
     if (status != QPL_STS_OK) {
         printf("qpl_execute_job status = %d\n", status);
         return -1;
