@@ -44,9 +44,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
         printf("qpl_execute_job status = %d\n", status);
         return -1;
     }
-    printf("qpl_execute_job status = OK\n");
     *compressed_size = job->total_out;
-    printf("Compressed size: %ld\n", *compressed_size);
     return 0;
 }
 
