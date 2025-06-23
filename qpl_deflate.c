@@ -33,27 +33,19 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
     job->available_in  = src_len;
     job->available_out = dst_capacity;
 
-    job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST;// |
-  //               QPL_FLAG_DYNAMIC_HUFFMAN |
+    job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST |
+                 QPL_FLAG_DYNAMIC_HUFFMAN;// |
    //              QPL_FLAG_GEN_LITERALS;//QPL_FLAG_OMIT_VERIFY;// |
    //              QPL_FLAG_GZIP_MODE;
 
     qpl_status status = qpl_execute_job(job);
-    printf("job->total_in  = %u\n", job->total_in);
-    printf("job->total_out = %u\n", job->total_out);
-    printf("job->available_in  = %u\n", job->available_in);
-    printf("job->available_out = %u\n", job->available_out);
-    printf("Full compressed block:\n");
-    for (size_t i = 0; i < *dlen; ++i) {
-        printf("%02x ", dst[i]);
-        if ((i + 1) % 16 == 0) printf("\n");
-    }
     if (status != QPL_STS_OK) {
         printf("qpl_execute_job status = %d\n", status);
         return -1;
     }
     printf("qpl_execute_job status = OK\n");
     *compressed_size = job->total_out;
+    printf("Compressed size: %un\n", compressed_size);
     return 0;
 }
 

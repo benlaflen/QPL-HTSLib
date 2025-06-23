@@ -651,12 +651,6 @@ int bgzf_compress(void *_dst, size_t *dlen, const void *src, size_t slen, int le
             return -1;
         }
 
-        printf("compressed block (hex): ");
-        for (size_t i = 0; i < out_len && i < 32; ++i)
-            printf("%02x ", dst[BLOCK_HEADER_LENGTH + i]);
-        printf("\n");
-        printf("last byte: %02x\n", dst[BLOCK_HEADER_LENGTH + out_len - 1]);
-
         // If we used up the entire output buffer, fallback to uncompressed
         if (out_len == (*dlen - BLOCK_HEADER_LENGTH - BLOCK_FOOTER_LENGTH)) {
             qpl_deflate_end(&stream);
@@ -668,6 +662,7 @@ int bgzf_compress(void *_dst, size_t *dlen, const void *src, size_t slen, int le
     }
 
     // write the header
+    printf("Final dlen: %un\n", *dlen);
     memcpy(dst, g_magic, BLOCK_HEADER_LENGTH); // the last two bytes are a place holder for the length of the block
     packInt16(&dst[16], *dlen - 1); // write the compressed length; -1 to fit 2 bytes
     // write the footer
