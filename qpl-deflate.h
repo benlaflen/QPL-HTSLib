@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <qpl_lib/qpl.h>
+#include <qpl/qpl.h>
 
 #ifdef __cplusplus
 extern "C" {
