@@ -20,9 +20,9 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
                     const void *src, size_t src_len,
                     void *dst, size_t dst_capacity,
                     size_t *compressed_size) {
-    printf("src_len = %d\n", src_len);
-    printf("dst_capacity = %d\n", dst_capacity);
-    printf("compressed_size = %d\n", compressed_size);
+    printf("src_len = %u\n", src_len);
+    printf("dst_capacity = %u\n", dst_capacity);
+    printf("compressed_size = %u\n", compressed_size);
     
     qpl_job *job = stream->job;
 
@@ -43,7 +43,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
         printf("qpl_execute_job status = %d\n", status);
         return -1;
     }
-    printf("qpl_execute_job status = OK\n", status);
+    printf("qpl_execute_job status = OK\n");
     *compressed_size = job->total_out;
     return 0;
 }
