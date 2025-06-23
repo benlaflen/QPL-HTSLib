@@ -43,6 +43,11 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
     printf("job->total_out = %u\n", job->total_out);
     printf("job->available_in  = %u\n", job->available_in);
     printf("job->available_out = %u\n", job->available_out);
+    printf("Full compressed block:\n");
+    for (size_t i = 0; i < *dlen; ++i) {
+        printf("%02x ", dst[i]);
+        if ((i + 1) % 16 == 0) printf("\n");
+    }
     if (status != QPL_STS_OK) {
         printf("qpl_execute_job status = %d\n", status);
         return -1;
