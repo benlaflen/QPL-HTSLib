@@ -21,6 +21,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
                     void *dst, size_t dst_capacity,
                     size_t *compressed_size) {
     if(src_len <= 0) {
+        *compressed_size = 0;
         return 0;
     }
     
