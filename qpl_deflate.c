@@ -22,7 +22,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
                     size_t *compressed_size) {
     printf("src_len = %lu\n", src_len);
     printf("dst_capacity = %lu\n", dst_capacity);
-    printf("compressed_size = %lu\n", compressed_size);
+    printf("compressed_size = %ln\n", compressed_size);
     
     qpl_job *job = stream->job;
 
