@@ -36,7 +36,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
 
     qpl_status status = qpl_execute_job(job);
     if (status != QPL_STS_OK) {
-        printf(status);
+        printf("qpl_execute_job status = %d\n", status);
         return -1;
     }
 
