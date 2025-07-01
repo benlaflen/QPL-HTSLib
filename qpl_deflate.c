@@ -1,6 +1,7 @@
 #include "qpl_deflate.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 int qpl_deflate_init(qpl_deflate_stream *stream) {
     qpl_status status = qpl_get_job_size(qpl_path_software, &stream->job_size);

@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.leaf": "html",
+        "stdio.h": "c"
+    }
+}
