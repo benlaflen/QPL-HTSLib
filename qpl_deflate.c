@@ -39,6 +39,8 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
    //              QPL_FLAG_GEN_LITERALS;//QPL_FLAG_OMIT_VERIFY;// |
    //              QPL_FLAG_GZIP_MODE;
 
+    printf("in: %p (%zu), out: %p (%zu), level: %d, flags: 0x%x\n", src, src_len, dst, dst_capacity, job->level, job->flags);
+
     qpl_status status = qpl_execute_job(job);
     if (status != QPL_STS_OK) {
         printf("qpl_execute_job status = %d\n", status);
