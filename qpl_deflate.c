@@ -13,6 +13,7 @@ int qpl_deflate_init(qpl_deflate_stream *stream) {
     stream->job = (qpl_job *)stream->job_buffer;
     status = qpl_init_job(qpl_path_software, stream->job);
     if (status != QPL_STS_OK) return -1;
+ //   memset(stream->job, 0, stream->job_size);
 
     return 0;
 }
@@ -41,6 +42,8 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
         if (src_needs_free) free(aligned_src);
         return -1;
     }
+    assert(((uintptr_t)aligned_src & 63) == 0);
+    assert(((uintptr_t)aligned_dst & 63) == 0);
 
     qpl_job *job = stream->job;
     job->op            = qpl_op_compress;
@@ -50,7 +53,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
     job->available_in  = src_len;
     job->available_out = dst_capacity;
 
-    job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST;// | QPL_FLAG_DYNAMIC_HUFFMAN;
+    job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST | QPL_FLAG_DYNAMIC_HUFFMAN;
 
     printf("in: %p (%zu), out: %p (%zu), level: %d, flags: 0x%x\n",
            aligned_src, src_len, aligned_dst, dst_capacity, job->level, job->flags);
