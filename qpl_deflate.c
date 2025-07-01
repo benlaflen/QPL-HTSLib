@@ -44,7 +44,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
 
     qpl_job *job = stream->job;
     job->op            = qpl_op_compress;
-    job->level         = 4;  // safer than qpl_default_level (1) with DYNAMIC_HUFFMAN
+    job->level         = qpl_default_level;
     job->next_in_ptr   = aligned_src;
     job->next_out_ptr  = aligned_dst;
     job->available_in  = src_len;
