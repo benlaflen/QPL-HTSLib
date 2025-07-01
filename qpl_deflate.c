@@ -21,7 +21,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
                     const void *src, size_t src_len,
                     void *dst, size_t dst_capacity,
                     size_t *compressed_size) {
-    if(src_len <= 0) {
+    if (src_len <= 0) {
         *compressed_size = 0;
         return 0;
     }
@@ -34,31 +34,40 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
         memcpy(aligned_src, src, src_len);
         src_needs_free = 1;
     }
-    
-    qpl_job *job = stream->job;
 
+    // Always allocate aligned output buffer
+    void *aligned_dst = NULL;
+    if (posix_memalign(&aligned_dst, 64, dst_capacity) != 0) {
+        if (src_needs_free) free(aligned_src);
+        return -1;
+    }
+
+    qpl_job *job = stream->job;
     job->op            = qpl_op_compress;
-    job->level         = qpl_default_level;
-    job->next_in_ptr   = (uint8_t *)src;
-    job->next_out_ptr  = (uint8_t *)dst;
+    job->level         = 4;  // safer than qpl_default_level (1) with DYNAMIC_HUFFMAN
+    job->next_in_ptr   = aligned_src;
+    job->next_out_ptr  = aligned_dst;
     job->available_in  = src_len;
     job->available_out = dst_capacity;
 
-    job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST |
-                 QPL_FLAG_DYNAMIC_HUFFMAN;// |
-   //              QPL_FLAG_GEN_LITERALS;//QPL_FLAG_OMIT_VERIFY;// |
-   //              QPL_FLAG_GZIP_MODE;
+    job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST | QPL_FLAG_DYNAMIC_HUFFMAN;
 
-    printf("in: %p (%zu), out: %p (%zu), level: %d, flags: 0x%x\n", aligned_src, src_len, dst, dst_capacity, job->level, job->flags);
+    printf("in: %p (%zu), out: %p (%zu), level: %d, flags: 0x%x\n",
+           aligned_src, src_len, aligned_dst, dst_capacity, job->level, job->flags);
+
+    qpl_status status = qpl_execute_job(job);
 
     if (src_needs_free) free(aligned_src);
 
-    qpl_status status = qpl_execute_job(job);
     if (status != QPL_STS_OK) {
         printf("qpl_execute_job status = %d\n", status);
+        free(aligned_dst);
         return -1;
     }
+
+    memcpy(dst, aligned_dst, job->total_out);
     *compressed_size = job->total_out;
+    free(aligned_dst);
     return 0;
 }
 
