@@ -24,6 +24,15 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
         *compressed_size = 0;
         return 0;
     }
+
+    // Allocate aligned input buffer if needed
+    void *aligned_src = (void *)src;
+    int src_needs_free = 0;
+    if (((uintptr_t)src & 63) != 0) {
+        if (posix_memalign(&aligned_src, 64, src_len) != 0) return -1;
+        memcpy(aligned_src, src, src_len);
+        src_needs_free = 1;
+    }
     
     qpl_job *job = stream->job;
 
