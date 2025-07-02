@@ -56,7 +56,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
 
     job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST;// | QPL_FLAG_DYNAMIC_HUFFMAN;
 
-    printf("in: %p (%zu), out: %p (%zu), level: %d, flags: 0x%x\n",
+    /*printf("in: %p (%zu), out: %p (%zu), level: %d, flags: 0x%x\n",
            aligned_src, src_len, aligned_dst, dst_capacity, job->level, job->flags);
     printf("Job details:\n");
     printf("  op: %d\n", job->op);
@@ -70,7 +70,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
     printf("  ignore_start_bits: %u\n", job->ignore_start_bits);
     printf("  ignore_end_bits: %u\n", job->ignore_end_bits);
     printf("  mini_block_size: %u\n", job->mini_block_size);
-    printf("  huffman_table: %p\n", job->huffman_table);
+    printf("  huffman_table: %p\n", job->huffman_table);*/
 
     qpl_status status = qpl_execute_job(job);
 

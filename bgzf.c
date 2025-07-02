@@ -648,7 +648,8 @@ int bgzf_compress(void *_dst, size_t *dlen, const void *src, size_t slen, int le
         if (ret != QPL_STS_OK) {
             qpl_deflate_end(&stream);
             hts_log_error("qpl_deflate_run failed: %d", ret);
-            return -1;
+            goto uncomp;
+            //return -1;
         }
 
         // If we used up the entire output buffer, fallback to uncompressed
