@@ -1,27 +1,6 @@
 #include "qpl_deflate.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <assert.h>
-
-int qpl_deflate_init(qpl_deflate_stream *stream) {
-    qpl_status status = qpl_get_job_size(qpl_path_software, &stream->job_size);
-    if (status != QPL_STS_OK) return -1;
-
-    stream->job_buffer = malloc(stream->job_size);
-    if (!stream->job_buffer) return -1;
-
-    stream->job = (qpl_job *)stream->job_buffer;
-    status = qpl_init_job(qpl_path_software, stream->job);
-    if (status != QPL_STS_OK) return -1;
- //   memset(stream->job, 0, stream->job_size);
-
-    return 0;
-}
-
-#include "qpl_deflate.h"
-#include <stdlib.h>
-#include <stdio.h>
 
 int qpl_deflate_init(qpl_deflate_stream *stream) {
     qpl_status status = qpl_get_job_size(qpl_path_software, &stream->job_size);
