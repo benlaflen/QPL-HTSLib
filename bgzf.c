@@ -778,6 +778,7 @@ static int bgzf_uncompress(uint8_t *dst, size_t *dlen,
     if (qpl_inflate_run(&stream, src, slen, dst, *dlen, &out_len) == 0) {
         qpl_deflate_end(&stream);
         *dlen = out_len;
+        hts_log_error("qpl_inflate_run succeeded :)");
     } else {
         //Fallback to zlib
         qpl_deflate_end(&stream);
