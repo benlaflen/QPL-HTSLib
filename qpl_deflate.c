@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define GZIP_ID1 0x1F
+#define GZIP_ID2 0x8B
+#define GZIP_CM_DEFLATE 0x08
+
 int qpl_deflate_init(qpl_deflate_stream *stream) {
     qpl_status status = qpl_get_job_size(qpl_path_software, &stream->job_size);
     if (status != QPL_STS_OK) return -1;
@@ -45,6 +49,58 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
         return -1;
     }
     *compressed_size = job->total_out;
+    return 0;
+}
+
+int unwrap_deflate_stream(const uint8_t *src, size_t slen,
+                          const uint8_t **out_deflate, size_t *out_len) {
+    if (slen < 2) return -1;
+
+    // --- Check for GZIP ---
+    if (src[0] == GZIP_ID1 && src[1] == GZIP_ID2 && src[2] == GZIP_CM_DEFLATE) {
+        if (slen < 10) return -1;
+
+        size_t offset = 10;  // skip fixed 10-byte header
+        uint8_t flg = src[3];
+
+        // FLG bits: https://datatracker.ietf.org/doc/html/rfc1952#section-2.3.1
+        if (flg & 0x04) { // FEXTRA
+            if (offset + 2 > slen) return -1;
+            uint16_t xlen = src[offset] | (src[offset+1] << 8);
+            offset += 2 + xlen;
+            if (offset > slen) return -1;
+        }
+        if (flg & 0x08) { // FNAME
+            while (offset < slen && src[offset] != 0) offset++;
+            offset++;
+        }
+        if (flg & 0x10) { // FCOMMENT
+            while (offset < slen && src[offset] != 0) offset++;
+            offset++;
+        }
+        if (flg & 0x02) { // FHCRC
+            offset += 2;
+        }
+
+        if (offset >= slen || slen < offset + 8) return -1; // need space for DEFLATE + footer
+
+        *out_deflate = src + offset;
+        *out_len = slen - offset - 8; // exclude CRC32 + ISIZE
+        return 0;
+    }
+
+    // --- Check for zlib ---
+    if ((src[0] & 0x0F) == 0x08 && ((src[0] << 8) | src[1]) % 31 == 0) {
+        // Basic zlib header (CMF + FLG), RFC1950
+        if (slen < 6) return -1; // 2 header + 4 footer
+        *out_deflate = src + 2;
+        *out_len = slen - 6; // omit adler32
+        return 0;
+    }
+
+    // --- Assume raw DEFLATE ---
+    *out_deflate = src;
+    *out_len = slen;
     return 0;
 }
 
