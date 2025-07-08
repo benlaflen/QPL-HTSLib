@@ -20,6 +20,10 @@ int  qpl_deflate_run(qpl_deflate_stream *stream,
                      const void *src, size_t src_len,
                      void *dst, size_t dst_capacity,
                      size_t *compressed_size);
+int qpl_inflate_run(qpl_deflate_stream *stream,
+                    const void *src, size_t src_len,
+                    void *dst, size_t dst_capacity,
+                    size_t *decompressed_size);
 void qpl_deflate_end(qpl_deflate_stream *stream);
 
 #ifdef __cplusplus
