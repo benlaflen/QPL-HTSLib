@@ -20,6 +20,8 @@ int  qpl_deflate_run(qpl_deflate_stream *stream,
                      const void *src, size_t src_len,
                      void *dst, size_t dst_capacity,
                      size_t *compressed_size);
+int unwrap_deflate_stream(const uint8_t *src, size_t slen,
+                          const uint8_t **out_deflate, size_t *out_len);
 int qpl_inflate_run(qpl_deflate_stream *stream,
                     const void *src, size_t src_len,
                     void *dst, size_t dst_capacity,

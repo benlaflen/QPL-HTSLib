@@ -771,12 +771,16 @@ static int bgzf_uncompress(uint8_t *dst, size_t *dlen,
         return -1;
     }
 
+    const uint8_t *deflate_data;
+    size_t deflate_len;
+
     if (unwrap_deflate_stream(src, slen, &deflate_data, &deflate_len) != 0) {
         hts_log_error("Unable to unwrap DEFLATE stream");
         return -1;
     }
 
-    if (qpl_inflate_run(&stream, src, slen, dst, *dlen, &out_len) != 0) {
+    // Call QPL decompression
+    if (qpl_inflate_run(&stream, deflate_data, deflate_len, dst, *dlen, &out_len) != 0) {
         qpl_deflate_end(&stream);
         hts_log_error("qpl_inflate_run failed");
         return -1;
