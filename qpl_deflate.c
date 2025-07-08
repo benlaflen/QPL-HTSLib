@@ -56,6 +56,7 @@ int unwrap_deflate_stream(const uint8_t *src, size_t slen,
                           const uint8_t **out_deflate, size_t *out_len) {
     if (slen < 2) return -1;
 
+    printf("header: ");
     for (size_t i = 0; i < 10; ++i) {
         printf("%02x ", ((uint8_t *)src)[i]);
     }
@@ -106,7 +107,7 @@ int unwrap_deflate_stream(const uint8_t *src, size_t slen,
     }
 
     // --- Assume raw DEFLATE ---
-    printf("Detected as raw DEFLATE");
+    printf("Detected as raw DEFLATE\n");
     *out_deflate = src;
     *out_len = slen;
     return 0;
@@ -121,6 +122,7 @@ int qpl_inflate_run(qpl_deflate_stream *stream,
         return 0;
     }
 
+    printf("Inflating: ");
     for (size_t i = 0; i < 6; ++i) {
         printf("%02x ", ((uint8_t *)src)[i]);
     }
