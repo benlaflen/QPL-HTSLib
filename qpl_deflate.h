@@ -13,6 +13,8 @@ typedef struct {
     qpl_job *job;
     uint8_t *job_buffer;
     uint32_t job_size;
+    uint8_t history[32 * 1024]; // 32 KB persistent buffer
+    size_t history_filled;      // Track how much is valid
 } qpl_deflate_stream;
 
 int  qpl_deflate_init(qpl_deflate_stream *stream);
