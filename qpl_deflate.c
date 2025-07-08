@@ -56,12 +56,18 @@ int unwrap_deflate_stream(const uint8_t *src, size_t slen,
                           const uint8_t **out_deflate, size_t *out_len) {
     if (slen < 2) return -1;
 
+    for (size_t i = 0; i < 10; ++i) {
+        printf("%02x ", ((uint8_t *)src)[i]);
+    }
+    printf("\n");
+
+
     // --- Check for GZIP ---
     if (src[0] == GZIP_ID1 && src[1] == GZIP_ID2 && src[2] == GZIP_CM_DEFLATE) {
         if (slen < 10) return -1;
 
-        size_t offset = 10;  // skip fixed 10-byte header
         uint8_t flg = src[3];
+        size_t offset = 10;  // skip fixed 10-byte header
 
         // FLG bits: https://datatracker.ietf.org/doc/html/rfc1952#section-2.3.1
         if (flg & 0x04) { // FEXTRA
@@ -91,6 +97,7 @@ int unwrap_deflate_stream(const uint8_t *src, size_t slen,
 
     // --- Check for zlib ---
     if ((src[0] & 0x0F) == 0x08 && ((src[0] << 8) | src[1]) % 31 == 0) {
+        printf("Detected zlib");
         // Basic zlib header (CMF + FLG), RFC1950
         if (slen < 6) return -1; // 2 header + 4 footer
         *out_deflate = src + 2;
@@ -99,6 +106,7 @@ int unwrap_deflate_stream(const uint8_t *src, size_t slen,
     }
 
     // --- Assume raw DEFLATE ---
+    printf("Detected as raw DEFLATE");
     *out_deflate = src;
     *out_len = slen;
     return 0;
