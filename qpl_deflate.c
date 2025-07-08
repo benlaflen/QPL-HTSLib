@@ -122,12 +122,6 @@ int qpl_inflate_run(qpl_deflate_stream *stream,
         return 0;
     }
 
-    printf("Inflating: ");
-    for (size_t i = 0; i < 6; ++i) {
-        printf("%02x ", ((uint8_t *)src)[i]);
-    }
-    printf("\n");
-
     qpl_job *job = stream->job;
 
     job->op            = qpl_op_decompress;
@@ -136,7 +130,8 @@ int qpl_inflate_run(qpl_deflate_stream *stream,
     job->available_in  = src_len;
     job->available_out = dst_capacity;
 
-    job->flags = QPL_FLAG_OMIT_VERIFY;  // Omit verify = faster, you already do CRC manually
+    job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST |
+                 QPL_FLAG_OMIT_VERIFY;  // Omit verify = faster, you already do CRC manually
 
     // Possibly required depending on QPL version:
     // job->decomp_end_processing_hint = qpl_decomp_end_processing_complete;
