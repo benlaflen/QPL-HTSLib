@@ -83,7 +83,7 @@ int unwrap_deflate_stream(const uint8_t *src, size_t slen,
         }
 
         if (offset >= slen || slen < offset + 8) return -1; // need space for DEFLATE + footer
-
+        printf("Offsetting by %d bytes", offset);
         *out_deflate = src + offset;
         *out_len = slen - offset - 8; // exclude CRC32 + ISIZE
         return 0;
@@ -112,6 +112,11 @@ int qpl_inflate_run(qpl_deflate_stream *stream,
         *decompressed_size = 0;
         return 0;
     }
+
+    for (size_t i = 0; i < 6; ++i) {
+        printf("%02x ", ((uint8_t *)src)[i]);
+    }
+    printf("\n");
 
     qpl_job *job = stream->job;
 
