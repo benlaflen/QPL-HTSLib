@@ -749,7 +749,7 @@ static int bgzf_uncompress(uint8_t *dst, size_t *dlen,
 }
 
 #else
-
+//-----
 static int bgzf_uncompress(uint8_t *dst, size_t *dlen,
                            const uint8_t *src, size_t slen,
                            uint32_t expected_crc) {
@@ -763,23 +763,22 @@ static int bgzf_uncompress(uint8_t *dst, size_t *dlen,
         .avail_out = *dlen
     };
 
-    int ret = inflateInit2(&zs, -15);
-    if (ret != Z_OK) {
-        hts_log_error("Call to inflateInit2 failed: %s", bgzf_zerr(ret, &zs));
+    qpl_deflate_stream stream;
+    size_t out_len = 0;
+
+    if (qpl_deflate_init(&stream) != 0) {
+        hts_log_error("qpl_deflate_init failed");
         return -1;
     }
-    if ((ret = inflate(&zs, Z_FINISH)) != Z_STREAM_END) {
-        hts_log_error("Inflate operation failed: %s", bgzf_zerr(ret, ret == Z_DATA_ERROR ? &zs : NULL));
-        if ((ret = inflateEnd(&zs)) != Z_OK) {
-            hts_log_warning("Call to inflateEnd failed: %s", bgzf_zerr(ret, NULL));
-        }
+
+    if (qpl_inflate_run(&stream, src, slen, dst, *dlen, &out_len) != 0) {
+        qpl_deflate_end(&stream);
+        hts_log_error("qpl_inflate_run failed");
         return -1;
     }
-    if ((ret = inflateEnd(&zs)) != Z_OK) {
-        hts_log_error("Call to inflateEnd failed: %s", bgzf_zerr(ret, NULL));
-        return -1;
-    }
-    *dlen = *dlen - zs.avail_out;
+
+    qpl_deflate_end(&stream);
+    *dlen = out_len;
 
     uint32_t crc = crc32(crc32(0L, NULL, 0L), (unsigned char *)dst, *dlen);
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION

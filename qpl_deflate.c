@@ -48,6 +48,39 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
     return 0;
 }
 
+int qpl_inflate_run(qpl_deflate_stream *stream,
+                    const void *src, size_t src_len,
+                    void *dst, size_t dst_capacity,
+                    size_t *decompressed_size) {
+    if (src_len == 0) {
+        *decompressed_size = 0;
+        return 0;
+    }
+
+    qpl_job *job = stream->job;
+
+    job->op            = qpl_op_decompress;
+    job->next_in_ptr   = (uint8_t *)src;
+    job->next_out_ptr  = (uint8_t *)dst;
+    job->available_in  = src_len;
+    job->available_out = dst_capacity;
+
+    job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST |
+                 QPL_FLAG_OMIT_VERIFY;  // Omit verify = faster, you already do CRC manually
+
+    // Possibly required depending on QPL version:
+    // job->decomp_end_processing_hint = qpl_decomp_end_processing_complete;
+
+    qpl_status status = qpl_execute_job(job);
+    if (status != QPL_STS_OK) {
+        printf("qpl_execute_job (inflate) status = %d\n", status);
+        return -1;
+    }
+
+    *decompressed_size = job->total_out;
+    return 0;
+}
+
 void qpl_deflate_end(qpl_deflate_stream *stream) {
     if (stream->job) qpl_fini_job(stream->job);
     free(stream->job_buffer);
