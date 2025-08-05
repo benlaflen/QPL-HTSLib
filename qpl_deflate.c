@@ -38,8 +38,8 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
     job->available_in  = src_len;
     job->available_out = dst_capacity;
 
-    job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST | QPL_FLAG_OMIT_VERIFY |
-                 QPL_FLAG_DYNAMIC_HUFFMAN;// |
+    job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST | QPL_FLAG_OMIT_VERIFY; //|
+   //              QPL_FLAG_DYNAMIC_HUFFMAN;// |
    //              QPL_FLAG_GEN_LITERALS;QPL_FLAG_OMIT_VERIFY;// |
    //              QPL_FLAG_GZIP_MODE;
 
@@ -131,10 +131,7 @@ int qpl_inflate_run(qpl_deflate_stream *stream,
     job->available_out = dst_capacity;
 
     job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST |
-                 QPL_FLAG_OMIT_VERIFY;  // Omit verify = faster, you already do CRC manually
-
-    // Possibly required depending on QPL version:
-    // job->decomp_end_processing_hint = qpl_decomp_end_processing_complete;
+                 QPL_FLAG_OMIT_VERIFY;
 
     qpl_status status = qpl_execute_job(job);
     if (status != QPL_STS_OK) {
