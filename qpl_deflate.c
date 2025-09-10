@@ -6,15 +6,31 @@
 #define GZIP_ID2 0x8B
 #define GZIP_CM_DEFLATE 0x08
 
+#ifndef QPL_MODE
+#define QPL_MODE 0
+#endif
+
 int qpl_deflate_init(qpl_deflate_stream *stream) {
+#if QPL_MODE == 0
+    qpl_status status = qpl_get_job_size(qpl_path_auto, &stream->job_size);
+#elif QPL_MODE == 1
     qpl_status status = qpl_get_job_size(qpl_path_software, &stream->job_size);
+#elif QPL_MODE == 2
+    qpl_status status = qpl_get_job_size(qpl_path_hardware, &stream->job_size);
+#endif
     if (status != QPL_STS_OK) return -1;
 
     stream->job_buffer = malloc(stream->job_size);
     if (!stream->job_buffer) return -1;
 
     stream->job = (qpl_job *)stream->job_buffer;
+#if QPL_MODE == 0
+    status = qpl_init_job(qpl_path_auto, stream->job);
+#elif QPL_MODE == 1
     status = qpl_init_job(qpl_path_software, stream->job);
+#elif QPL_MODE == 2
+    status = qpl_init_job(qpl_path_hardware, stream->job);
+#endif
     if (status != QPL_STS_OK) return -1;
 
     return 0;
