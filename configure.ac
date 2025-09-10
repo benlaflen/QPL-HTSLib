@@ -61,6 +61,16 @@ endif
 EOF
    AC_MSG_ERROR([$1], [$2])])
 
+AC_ARG_WITH([qpl-mode],
+  AS_HELP_STRING([--with-qpl-mode=1/2], [Set to 1 to force software path, or 2 to force hardware path]),
+  [qpl_mode=$withval],
+  [qpl_mode=0])  dnl default to 0 if not passed
+
+AS_IF([test "x$qpl_mode" != x0], [
+  AC_DEFINE_UNQUOTED([QPL_MODE], [$qpl_mode], [Set to 1 to force software path, or 2 to force hardware path])
+  AC_MSG_NOTICE([QPL_MODE set to $qpl_mode])
+])
+
 AC_PROG_CC
 AC_PROG_RANLIB
 
