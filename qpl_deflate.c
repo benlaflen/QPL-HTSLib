@@ -1,7 +1,6 @@
 #include "qpl_deflate.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <iostream>
 
 #define GZIP_ID1 0x1F
 #define GZIP_ID2 0x8B
@@ -27,13 +26,13 @@ int qpl_deflate_init(qpl_deflate_stream *stream) {
     stream->job = (qpl_job *)stream->job_buffer;
 #if QPL_MODE == 0
     status = qpl_init_job(qpl_path_auto, stream->job);
-    cout << "\nUsing auto mode";
+    printf("\nUsing auto mode");
 #elif QPL_MODE == 1
     status = qpl_init_job(qpl_path_software, stream->job);
-    cout << "\nUsing software mode";
+    printf("\nUsing software mode");
 #elif QPL_MODE == 2
     status = qpl_init_job(qpl_path_hardware, stream->job);
-    cout << "\nUsing hardware mode";
+    printf("\nUsing hardware mode");
 #endif
     if (status != QPL_STS_OK) return -1;
 
