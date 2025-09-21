@@ -61,6 +61,12 @@ endif
 EOF
    AC_MSG_ERROR([$1], [$2])])
 
+dnl === Force QPL from local qpl_lib ===
+
+CPPFLAGS="$CPPFLAGS -Iqpl_lib/include"
+LDFLAGS="$LDFLAGS -Lqpl_lib/lib"
+LIBS="$LIBS -lqpl"
+
 AC_ARG_WITH([qpl-mode],
   AS_HELP_STRING([--with-qpl-mode=1/2], [Set to 1 to force software path, or 2 to force hardware path]),
   [qpl_mode=$withval],
