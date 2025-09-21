@@ -26,13 +26,13 @@ int qpl_deflate_init(qpl_deflate_stream *stream) {
     stream->job = (qpl_job *)stream->job_buffer;
 #if QPL_MODE == 0
     status = qpl_init_job(qpl_path_auto, stream->job);
-    printf("\nUsing auto mode");
+    printf("\nUsing auto mode\n");
 #elif QPL_MODE == 1
     status = qpl_init_job(qpl_path_software, stream->job);
-    printf("\nUsing software mode");
+    printf("\nUsing software mode\n");
 #elif QPL_MODE == 2
     status = qpl_init_job(qpl_path_hardware, stream->job);
-    printf("\nUsing hardware mode");
+    printf("\nUsing hardware mode\n");
 #endif
     if (status != QPL_STS_OK) return -1;
 
