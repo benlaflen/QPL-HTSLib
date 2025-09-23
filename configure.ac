@@ -29,6 +29,12 @@ AC_PREREQ(2.63)  dnl This version introduced 4-argument AC_CHECK_HEADER
 AC_CONFIG_SRCDIR(hts.c)
 AC_CONFIG_HEADERS(config.h)
 
+dnl === Force QPL from local qpl_lib ===
+
+CPPFLAGS="$CPPFLAGS -Iqpl_lib/include"
+LDFLAGS="$LDFLAGS -Lqpl_lib/lib"
+LIBS="$LIBS -lqpl"
+
 m4_include([m4/hts_prog_cc_warnings.m4])
 m4_include([m4/hts_check_compile_flags_needed.m4])
 m4_include([m4/hts_hide_dynamic_syms.m4])
@@ -60,12 +66,6 @@ $(error Resolve configure error first)
 endif
 EOF
    AC_MSG_ERROR([$1], [$2])])
-
-dnl === Force QPL from local qpl_lib ===
-
-CPPFLAGS="$CPPFLAGS -Iqpl_lib/include"
-LDFLAGS="$LDFLAGS -Lqpl_lib/lib"
-LIBS="$LIBS -lqpl"
 
 AC_ARG_WITH([qpl-mode],
   AS_HELP_STRING([--with-qpl-mode=1/2], [Set to 1 to force software path, or 2 to force hardware path]),
