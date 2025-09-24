@@ -1,3 +1,4 @@
+#include <config.h>
 #include "qpl_deflate.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -7,6 +8,7 @@
 #define GZIP_CM_DEFLATE 0x08
 
 #ifndef QPL_MODE
+#warning "No QPL_MODE defined. Falling back to qpl_path_auto."
 #define QPL_MODE 0
 #endif
 

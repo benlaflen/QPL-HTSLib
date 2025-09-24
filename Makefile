@@ -23,6 +23,7 @@
 # DEALINGS IN THE SOFTWARE.
 
 CC     = gcc
+LD	   = g++
 AR     = ar
 RANLIB = ranlib
 
@@ -114,7 +115,7 @@ BUILT_THRASH_PROGRAMS = \
 	test/thrash_threads7
 
 all: lib-static lib-shared $(BUILT_PROGRAMS) plugins \
-	$(BUILT_TEST_PROGRAMS) htslib_static.mk htslib-uninstalled.pc
+	htslib_static.mk htslib-uninstalled.pc
 
 # Report compiler and version
 cc-version:
@@ -556,19 +557,19 @@ qpl_deflate.o: qpl_deflate.c qpl_deflate.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o qpl_deflate.o qpl_deflate.c
 
 annot-tsv: annot-tsv.o libhts.a
-	$(CC) $(LDFLAGS) -o $@ annot-tsv.o libhts.a $(LIBS) -llzma -lbz2 -lz -lm -lqpl -lcurl -lcrypto -lpthread
+	$(LD) $(LDFLAGS) -o $@ annot-tsv.o libhts.a $(LIBS) -lpthread
 
 bgzip: bgzip.o libhts.a
-	$(CC) $(LDFLAGS) -o $@ bgzip.o libhts.a $(LIBS) -lpthread
+	$(LD) $(LDFLAGS) -o $@ bgzip.o libhts.a $(LIBS) -lpthread
 
 htsfile: htsfile.o libhts.a
-	$(CC) $(LDFLAGS) -o $@ htsfile.o libhts.a $(LIBS) -lpthread
+	$(LD) $(LDFLAGS) -o $@ htsfile.o libhts.a $(LIBS) -lpthread
 
 tabix: tabix.o libhts.a
-	$(CC) $(LDFLAGS) -o $@ tabix.o libhts.a $(LIBS) -lpthread
+	$(LD) $(LDFLAGS) -o $@ tabix.o libhts.a $(LIBS) -lpthread
 
 ref_cache/ref-cache: $(REF_CACHE_OBJS)
-	$(CC) $(LDFLAGS) $(REF_CACHE_EXTRA_LD_FLAGS) -o $@ $(REF_CACHE_OBJS) -lcurl
+	$(LD) $(LDFLAGS) $(REF_CACHE_EXTRA_LD_FLAGS) -o $@ $(REF_CACHE_OBJS) -lcurl
 
 annot-tsv.o: annot-tsv.c config.h $(htslib_hts_h) $(htslib_hts_defs_h) $(htslib_khash_str2int_h) $(htslib_kstring_h) $(htslib_kseq_h) $(htslib_bgzf_h) $(htslib_regidx_h) $(textutils_internal_h)
 bgzip.o: bgzip.c config.h $(htslib_bgzf_h) $(htslib_hts_h) $(htslib_hfile_h)
