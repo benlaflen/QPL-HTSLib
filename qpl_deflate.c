@@ -1,4 +1,4 @@
-#include <config.h>
+#include "config.h"
 #include "qpl_deflate.h"
 #include <stdlib.h>
 #include <stdio.h>
