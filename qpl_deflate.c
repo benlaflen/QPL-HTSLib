@@ -73,9 +73,9 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
     }
 
     qpl_histogram hist = {0};
-    status = qpl_gather_deflate_statistics(src_ptr, src_len, &hist, execution_path, flags);
+    status = qpl_gather_deflate_statistics(src, src_len, &hist, execution_path, 0);
 
-    status = qpl_huffman_table_init_with_histogram(table, &hist);
+    status = qpl_huffman_table_init_with_histogram(c_huffman_table, &hist);
 
 
     job->op            = qpl_op_compress;
