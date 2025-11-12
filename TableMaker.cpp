@@ -1,9 +1,9 @@
 #include "qpl/qpl.h"
 #include "qpl/c_api/statistics.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cstdint>
+#include <cstring>
 
 int main(int argc, char **argv) {
     if (argc < 2) {
@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     size_t file_size = ftell(in);
     rewind(in);
 
-    uint8_t *data = malloc(file_size);
+    uint8_t *data = static_cast<uint8_t *>(malloc(file_size));
     if (!data) {
         perror("malloc");
         fclose(in);
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 
     // --- Create table ---
     allocator_t alloc = {malloc, free};
-    qpl_huffman_table_t table = NULL;
+    qpl_huffman_table_t table = nullptr;
 
     qpl_status status = qpl_deflate_huffman_table_create(compression_table_type,
                                                          qpl_path_software,
@@ -42,16 +42,17 @@ int main(int argc, char **argv) {
                                                          &table);
     if (status != QPL_STS_OK) {
         printf("Failed to create table: %d\n", status);
+        free(data);
         return status;
     }
 
     // --- Build histogram ---
-    qpl_histogram hist = {0};
+    qpl_histogram hist = {}; // Zero-initialize safely
     status = qpl_gather_deflate_statistics(data,
-                                           (uint32_t)file_size,
+                                           static_cast<uint32_t>(file_size),
                                            &hist,
-                                           qpl_path_software,
-                                           0);
+                                           qpl_default_level,  // compression level
+                                           qpl_path_software); // execution path
     if (status != QPL_STS_OK) {
         printf("Failed to gather stats: %d\n", status);
         qpl_huffman_table_destroy(table);
@@ -69,9 +70,11 @@ int main(int argc, char **argv) {
     }
 
     // --- Serialize ---
-    serialization_options_t opts = {0};
-    size_t serialized_size = 0;
+    serialization_options_t opts = {};
+    opts.format = qpl_serialization_format_internal;  // Default internal binary format
+    opts.flags = 0;
 
+    size_t serialized_size = 0;
     status = qpl_huffman_table_get_serialized_size(table, opts, &serialized_size);
     if (status != QPL_STS_OK) {
         printf("Failed to get serialized size: %d\n", status);
@@ -80,7 +83,7 @@ int main(int argc, char **argv) {
         return status;
     }
 
-    uint8_t *buffer = malloc(serialized_size);
+    uint8_t *buffer = static_cast<uint8_t *>(malloc(serialized_size));
     if (!buffer) {
         perror("malloc");
         qpl_huffman_table_destroy(table);
@@ -113,6 +116,5 @@ int main(int argc, char **argv) {
     free(buffer);
     qpl_huffman_table_destroy(table);
     free(data);
-
     return 0;
 }
