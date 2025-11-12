@@ -72,22 +72,10 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
         return -1;
     }
 
-    qpl_histogram deflate_histogram;
-    status = qpl_deflate_histogram_init(&deflate_histogram);
-    if (status != QPL_STS_OK) return status;
+    qpl_histogram hist = {0};
+    status = qpl_gather_deflate_statistics(src_ptr, src_len, &hist, execution_path, flags);
 
-    status = qpl_gather_deflate_statistics((uint8_t *)src,
-                                        src_len,
-                                        &deflate_histogram,
-                                        execution_path);
-    if (status != QPL_STS_OK) return status;
-
-    status = qpl_huffman_table_init_with_histogram(c_huffman_table,
-                                               &deflate_histogram);
-    if (status != QPL_STS_OK) {
-        printf("Failed to init table with histogram: %d\n", status);
-        return status;
-    }
+    status = qpl_huffman_table_init_with_histogram(table, &hist);
 
 
     job->op            = qpl_op_compress;
