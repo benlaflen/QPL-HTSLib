@@ -70,9 +70,7 @@ int main(int argc, char **argv) {
     }
 
     // --- Serialize ---
-    serialization_options_t opts = {};
-    opts.format = qpl_serialization_format_internal;  // Default internal binary format
-    opts.flags = 0;
+    serialization_options_t opts = {};  // leave default: raw format implied
 
     size_t serialized_size = 0;
     status = qpl_huffman_table_get_serialized_size(table, opts, &serialized_size);
