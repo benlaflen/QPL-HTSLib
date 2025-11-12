@@ -556,8 +556,8 @@ htscodecs/htscodecs/rANS_static32x16pr_sse4.o htscodecs/htscodecs/rANS_static32x
 qpl_deflate.o: qpl_deflate.c qpl_deflate.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o qpl_deflate.o qpl_deflate.c
 
-annot-tsv: annot-tsv.o libhts.a
-	$(LD) $(LDFLAGS) -o $@ annot-tsv.o libhts.a $(LIBS) -lpthread
+annot-tsv: annot-tsv.o libhts.a qpl_lib/lib/libqpl.a
+	$(LD) $(LDFLAGS) -o $@ annot-tsv.o libhts.a qpl_lib/lib/libqpl.a $(LIBS) -lpthread
 
 bgzip: bgzip.o libhts.a
 	$(LD) $(LDFLAGS) -o $@ bgzip.o libhts.a $(LIBS) -lpthread
