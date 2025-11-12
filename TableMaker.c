@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    // --- Read input dataset ---
+    // --- Read dataset ---
     FILE *in = fopen(argv[1], "rb");
     if (!in) {
         perror("fopen");
@@ -22,10 +22,17 @@ int main(int argc, char **argv) {
     rewind(in);
 
     uint8_t *data = malloc(file_size);
-    fread(data, 1, file_size, in);
+    if (!data) {
+        perror("malloc");
+        fclose(in);
+        return 1;
+    }
+    if (fread(data, 1, file_size, in) != file_size) {
+        fprintf(stderr, "Warning: fread truncated\n");
+    }
     fclose(in);
 
-    // --- Create Deflate Huffman table ---
+    // --- Create table ---
     allocator_t alloc = {malloc, free};
     qpl_huffman_table_t table = NULL;
 
@@ -40,10 +47,15 @@ int main(int argc, char **argv) {
 
     // --- Build histogram ---
     qpl_histogram hist = {0};
-    status = qpl_gather_deflate_statistics(data, (uint32_t)file_size,
-                                           &hist, qpl_path_software, 0);
+    status = qpl_gather_deflate_statistics(data,
+                                           (uint32_t)file_size,
+                                           &hist,
+                                           qpl_path_software,
+                                           0);
     if (status != QPL_STS_OK) {
         printf("Failed to gather stats: %d\n", status);
+        qpl_huffman_table_destroy(table);
+        free(data);
         return status;
     }
 
@@ -51,29 +63,53 @@ int main(int argc, char **argv) {
     status = qpl_huffman_table_init_with_histogram(table, &hist);
     if (status != QPL_STS_OK) {
         printf("Failed to init table: %d\n", status);
+        qpl_huffman_table_destroy(table);
+        free(data);
         return status;
     }
 
-    // --- Serialize to file ---
-    uint32_t serialized_size = 0;
-    qpl_huffman_table_get_serialized_size(table, &serialized_size);
-    uint8_t *buffer = malloc(serialized_size);
-
-    // The serialization API now needs an extra options struct
+    // --- Serialize ---
     serialization_options_t opts = {0};
+    size_t serialized_size = 0;
+
+    status = qpl_huffman_table_get_serialized_size(table, opts, &serialized_size);
+    if (status != QPL_STS_OK) {
+        printf("Failed to get serialized size: %d\n", status);
+        qpl_huffman_table_destroy(table);
+        free(data);
+        return status;
+    }
+
+    uint8_t *buffer = malloc(serialized_size);
+    if (!buffer) {
+        perror("malloc");
+        qpl_huffman_table_destroy(table);
+        free(data);
+        return 1;
+    }
+
     status = qpl_huffman_table_serialize(table, buffer, serialized_size, opts);
     if (status != QPL_STS_OK) {
         printf("Serialization failed: %d\n", status);
+        qpl_huffman_table_destroy(table);
+        free(buffer);
+        free(data);
         return status;
     }
 
     FILE *out = fopen("SAM-Table.bin", "wb");
+    if (!out) {
+        perror("fopen");
+        qpl_huffman_table_destroy(table);
+        free(buffer);
+        free(data);
+        return 1;
+    }
     fwrite(buffer, 1, serialized_size, out);
     fclose(out);
 
-    printf("Wrote Huffman table (%u bytes) to SAM-Table.bin\n", serialized_size);
+    printf("Wrote Huffman table (%zu bytes) to SAM-Table.bin\n", serialized_size);
 
-    // --- Cleanup ---
     free(buffer);
     qpl_huffman_table_destroy(table);
     free(data);
