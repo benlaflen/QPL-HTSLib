@@ -62,11 +62,31 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
 
     qpl_huffman_table_t c_huffman_table = NULL;
     allocator_t default_allocator_c = {malloc, free};
-    qpl_status status = qpl_huffman_only_table_create(compression_table_type, execution_path, default_allocator_c, &c_huffman_table);
+    qpl_status status = qpl_deflate_huffman_table_create(compression_table_type,
+                                                     execution_path,
+                                                     default_allocator_c,
+                                                     &c_huffman_table);
     if (status != QPL_STS_OK) {
         printf("qpl huffman table status = %d\n", status);
         qpl_huffman_table_destroy(c_huffman_table);
         return -1;
+    }
+
+    qpl_histogram deflate_histogram;
+    status = qpl_deflate_histogram_init(&deflate_histogram);
+    if (status != QPL_STS_OK) return status;
+
+    status = qpl_gather_deflate_statistics((uint8_t *)src,
+                                        src_len,
+                                        &deflate_histogram,
+                                        execution_path);
+    if (status != QPL_STS_OK) return status;
+
+    status = qpl_huffman_table_init_with_histogram(c_huffman_table,
+                                               &deflate_histogram);
+    if (status != QPL_STS_OK) {
+        printf("Failed to init table with histogram: %d\n", status);
+        return status;
     }
 
 
