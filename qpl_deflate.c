@@ -52,6 +52,14 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
 
     qpl_job *job = stream->job;
 
+#if QPL_MODE == 0
+    qpl_path_t xecution_path = qpl_path_auto;
+#elif QPL_MODE == 1
+    qpl_path_t execution_path = qpl_path_software;
+#elif QPL_MODE == 2
+    qpl_path_t execution_path = qpl_path_hardware;
+#endif
+
     qpl_huffman_table_t c_huffman_table = NULL;
     allocator_t default_allocator_c = {malloc, free};
     qpl_status status = qpl_huffman_only_table_create(compression_table_type, execution_path, default_allocator_c, &c_huffman_table);
