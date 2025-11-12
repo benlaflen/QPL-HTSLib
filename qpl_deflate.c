@@ -53,7 +53,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
     qpl_job *job = stream->job;
 
 #if QPL_MODE == 0
-    qpl_path_t xecution_path = qpl_path_auto;
+    qpl_path_t execution_path = qpl_path_auto;
 #elif QPL_MODE == 1
     qpl_path_t execution_path = qpl_path_software;
 #elif QPL_MODE == 2
@@ -132,7 +132,7 @@ int unwrap_deflate_stream(const uint8_t *src, size_t slen,
         }
 
         if (offset >= slen || slen < offset + 8) return -1; // need space for DEFLATE + footer
-        printf("Offsetting by %d bytes", offset);
+        printf("Offsetting by %ld bytes", offset);
         *out_deflate = src + offset;
         *out_len = slen - offset - 8; // exclude CRC32 + ISIZE
         return 0;
