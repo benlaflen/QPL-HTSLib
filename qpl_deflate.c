@@ -52,6 +52,16 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
 
     qpl_job *job = stream->job;
 
+    qpl_huffman_table_t c_huffman_table = NULL;
+    allocator_t default_allocator_c = {malloc, free};
+    qpl_status status = qpl_huffman_only_table_create(compression_table_type, execution_path, default_allocator_c, &c_huffman_table);
+    if (status != QPL_STS_OK) {
+        printf("qpl huffman table status = %d\n", status);
+        qpl_huffman_table_destroy(c_huffman_table);
+        return -1;
+    }
+
+
     job->op            = qpl_op_compress;
     job->level         = qpl_default_level;
     job->next_in_ptr   = (uint8_t *)src;
@@ -63,13 +73,16 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
    //              QPL_FLAG_DYNAMIC_HUFFMAN;// |
    //              QPL_FLAG_GEN_LITERALS;QPL_FLAG_OMIT_VERIFY;// |
    //              QPL_FLAG_GZIP_MODE;
+   job->huffman_table = c_huffman_table;
 
-    qpl_status status = qpl_execute_job(job);
+    status = qpl_execute_job(job);
     if (status != QPL_STS_OK) {
         printf("qpl_execute_job status = %d\n", status);
+        qpl_huffman_table_destroy(c_huffman_table);
         return -1;
     }
     *compressed_size = job->total_out;
+    qpl_huffman_table_destroy(c_huffman_table);
     return 0;
 }
 
