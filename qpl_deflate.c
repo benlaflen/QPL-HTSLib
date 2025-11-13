@@ -60,7 +60,53 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
     qpl_path_t execution_path = qpl_path_hardware;
 #endif
 
+    // --- Load precomputed Huffman table ---
+    FILE *f = fopen("SAM-Table.bin", "rb");
+    if (!f) {
+        perror("fopen SAM-Table.bin");
+        return -1;
+    }
+    fseek(f, 0, SEEK_END);
+    size_t table_size = ftell(f);
+    rewind(f);
+
+    uint8_t *table_data = (uint8_t *)malloc(table_size);
+    if (!table_data) {
+        perror("malloc table_data");
+        fclose(f);
+        return -1;
+    }
+    if (fread(table_data, 1, table_size, f) != table_size) {
+        fprintf(stderr, "Warning: truncated SAM-Table.bin\n");
+    }
+    fclose(f);
+
+    // Allocate table object
+    allocator_t default_allocator_c = {malloc, free};
     qpl_huffman_table_t c_huffman_table = NULL;
+    qpl_status status = qpl_deflate_huffman_table_create(compression_table_type,
+                                                         execution_path,
+                                                         default_allocator_c,
+                                                         &c_huffman_table);
+    if (status != QPL_STS_OK) {
+        printf("qpl huffman table create status = %d\n", status);
+        free(table_data);
+        return -1;
+    }
+
+    // Deserialize it
+    serialization_options_t opts = {};
+    opts.format = serialization_raw;  // same as used during save
+    opts.flags  = 0;
+    status = qpl_huffman_table_deserialize(&c_huffman_table, table_data, table_size, opts);
+    free(table_data);
+    if (status != QPL_STS_OK) {
+        printf("qpl_huffman_table_deserialize failed: %d\n", status);
+        qpl_huffman_table_destroy(c_huffman_table);
+        return -1;
+    }
+
+    /*qpl_huffman_table_t c_huffman_table = NULL;
     allocator_t default_allocator_c = {malloc, free};
     qpl_status status = qpl_deflate_huffman_table_create(compression_table_type,
                                                      execution_path,
@@ -75,7 +121,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
     qpl_histogram hist = {0};
     status = qpl_gather_deflate_statistics(src, src_len, &hist, execution_path, 0);
 
-    status = qpl_huffman_table_init_with_histogram(c_huffman_table, &hist);
+    status = qpl_huffman_table_init_with_histogram(c_huffman_table, &hist);*/
 
 
     job->op            = qpl_op_compress;
