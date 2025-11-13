@@ -98,14 +98,6 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
 
     qpl_job *job = stream->job;
 
-#if QPL_MODE == 0
-    qpl_path_t execution_path = qpl_path_auto;
-#elif QPL_MODE == 1
-    qpl_path_t execution_path = qpl_path_software;
-#elif QPL_MODE == 2
-    qpl_path_t execution_path = qpl_path_hardware;
-#endif
-
     /*qpl_huffman_table_t c_huffman_table = NULL;
     allocator_t default_allocator_c = {malloc, free};
     qpl_status status = qpl_deflate_huffman_table_create(compression_table_type,
@@ -137,7 +129,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
    //              QPL_FLAG_GZIP_MODE;
    job->huffman_table = g_static_huffman_table;
 
-    status = qpl_execute_job(job);
+    qpl_status = qpl_execute_job(job);
     if (status != QPL_STS_OK) {
         printf("qpl_execute_job status = %d\n", status);
         return -1;
