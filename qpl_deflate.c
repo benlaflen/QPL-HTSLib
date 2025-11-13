@@ -129,7 +129,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
    //              QPL_FLAG_GZIP_MODE;
    job->huffman_table = g_static_huffman_table;
 
-    qpl_status = qpl_execute_job(job);
+    qpl_status status = qpl_execute_job(job);
     if (status != QPL_STS_OK) {
         printf("qpl_execute_job status = %d\n", status);
         return -1;
