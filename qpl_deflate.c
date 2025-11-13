@@ -95,18 +95,11 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
     }
 
     // Deserialize it
-    serialization_options_t opts = {};
-    opts.format = serialization_raw;
-    opts.flags  = 0;
-
-    allocator_t default_allocator_c = {malloc, free};
-
     status = qpl_huffman_table_deserialize(
-        table_data,               // const uint8_t* const dump_buffer_ptr
-        table_size,               // const size_t dump_buffer_size
-        default_allocator_c,      // allocator_t allocator
-        opts,                     // serialization_options_t options
-        &c_huffman_table          // qpl_huffman_table_t* table_ptr
+        table_data,          // serialized buffer
+        table_size,          // buffer size
+        default_allocator_c, // allocator { malloc, free }
+        &c_huffman_table     // output handle
     );
 
     /*qpl_huffman_table_t c_huffman_table = NULL;
