@@ -140,11 +140,9 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
     status = qpl_execute_job(job);
     if (status != QPL_STS_OK) {
         printf("qpl_execute_job status = %d\n", status);
-        qpl_huffman_table_destroy(c_huffman_table);
         return -1;
     }
     *compressed_size = job->total_out;
-    qpl_huffman_table_destroy(c_huffman_table);
     return 0;
 }
 
