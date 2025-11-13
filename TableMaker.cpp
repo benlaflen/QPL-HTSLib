@@ -70,7 +70,10 @@ int main(int argc, char **argv) {
     }
 
     // --- Serialize ---
-    serialization_options_t opts = {};  // leave default: raw format implied
+    serialization_options_t opts = {
+        .format = serialization_raw,  // use the "raw" format (Deflate-compatible)
+        .flags  = 0                   // disable all advanced/experimental features
+    };;  // leave default: raw format implied
 
     size_t serialized_size = 0;
     status = qpl_huffman_table_get_serialized_size(table, opts, &serialized_size);
