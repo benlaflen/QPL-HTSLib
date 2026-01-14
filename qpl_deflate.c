@@ -1,6 +1,5 @@
 #include "config.h"
 #include "qpl_deflate.h"
-#include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -12,45 +11,6 @@
 #warning "No QPL_MODE defined. Falling back to qpl_path_auto."
 #define QPL_MODE 0
 #endif
-
-static qpl_huffman_table_t g_static_huffman_table = NULL;
-static pthread_once_t g_table_once = PTHREAD_ONCE_INIT;
-
-static void init_static_huffman_table(void) {
-    FILE *f = fopen("SAM-Table.bin", "rb");
-    if (!f) {
-        perror("fopen SAM-Table.bin");
-        return;
-    }
-
-    fseek(f, 0, SEEK_END);
-    size_t table_size = ftell(f);
-    rewind(f);
-
-    uint8_t *table_data = (uint8_t *)malloc(table_size);
-    if (!table_data) {
-        perror("malloc table_data");
-        fclose(f);
-        return;
-    }
-
-    if (fread(table_data, 1, table_size, f) != table_size)
-        fprintf(stderr, "Warning: truncated SAM-Table.bin\n");
-    fclose(f);
-
-    allocator_t alloc = {malloc, free};
-    qpl_status status = qpl_huffman_table_deserialize(
-        table_data,
-        table_size,
-        alloc,
-        &g_static_huffman_table
-    );
-
-    free(table_data);
-
-    if (status != QPL_STS_OK)
-        fprintf(stderr, "Failed to deserialize Huffman table: %d\n", status);
-}
 
 int qpl_deflate_init(qpl_deflate_stream *stream) {
 #if QPL_MODE == 0
@@ -90,31 +50,7 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
         return 0;
     }
 
-    pthread_once(&g_table_once, init_static_huffman_table);
-    if (!g_static_huffman_table) {
-        fprintf(stderr, "Global Huffman table not initialized.\n");
-        return -1;
-    }
-
     qpl_job *job = stream->job;
-
-    /*qpl_huffman_table_t c_huffman_table = NULL;
-    allocator_t default_allocator_c = {malloc, free};
-    qpl_status status = qpl_deflate_huffman_table_create(compression_table_type,
-                                                     execution_path,
-                                                     default_allocator_c,
-                                                     &c_huffman_table);
-    if (status != QPL_STS_OK) {
-        printf("qpl huffman table status = %d\n", status);
-        qpl_huffman_table_destroy(c_huffman_table);
-        return -1;
-    }
-
-    qpl_histogram hist = {0};
-    status = qpl_gather_deflate_statistics(src, src_len, &hist, execution_path, 0);
-
-    status = qpl_huffman_table_init_with_histogram(c_huffman_table, &hist);*/
-
 
     job->op            = qpl_op_compress;
     job->level         = qpl_default_level;
@@ -127,9 +63,8 @@ int qpl_deflate_run(qpl_deflate_stream *stream,
    //              QPL_FLAG_DYNAMIC_HUFFMAN;// |
    //              QPL_FLAG_GEN_LITERALS;QPL_FLAG_OMIT_VERIFY;// |
    //              QPL_FLAG_GZIP_MODE;
-   job->huffman_table = g_static_huffman_table;
 
-    qpl_status = qpl_execute_job(job);
+    qpl_status status = qpl_execute_job(job);
     if (status != QPL_STS_OK) {
         printf("qpl_execute_job status = %d\n", status);
         return -1;
@@ -176,7 +111,7 @@ int unwrap_deflate_stream(const uint8_t *src, size_t slen,
         }
 
         if (offset >= slen || slen < offset + 8) return -1; // need space for DEFLATE + footer
-        printf("Offsetting by %ld bytes", offset);
+        printf("Offsetting by %d bytes", offset);
         *out_deflate = src + offset;
         *out_len = slen - offset - 8; // exclude CRC32 + ISIZE
         return 0;

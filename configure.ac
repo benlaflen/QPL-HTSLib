@@ -33,7 +33,7 @@ dnl === Force QPL from local qpl_lib ===
 
 CPPFLAGS="$CPPFLAGS -Iqpl_lib/include"
 LDFLAGS="$LDFLAGS -Lqpl_lib/lib"
-LIBS="$LIBS -lqpl -ldl"
+LIBS="$LIBS -lqpl"
 
 m4_include([m4/hts_prog_cc_warnings.m4])
 m4_include([m4/hts_check_compile_flags_needed.m4])
