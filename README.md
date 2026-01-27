@@ -1,4 +1,4 @@
-QPL-HTSlib is a fork of HTSLib, which is a unified C library for accessing common file
+QPL-HTSlib is a fork of [HTSLib][0], which is a unified C library for accessing common file
 formats, such as [SAM, CRAM and VCF][1], used for high-throughput sequencing
 data, and is the core library used by [samtools][2] and [bcftools][3].
 QPL-HTSLib extends HTSLib by adding compatibility with Intel QPL and IAA cacceleration for file compression and decompression.
@@ -14,6 +14,7 @@ and then for the old if the new index is absent.
 This project also includes the popular tabix indexer, which creates both `.tbi`
 and `.csi` formats, and the bgzip compression utility.
 
+[0]: https://github.com/samtools/htslib
 [1]: http://samtools.github.io/hts-specs/
 [2]: http://github.com/samtools/samtools
 [3]: http://samtools.github.io/bcftools/
