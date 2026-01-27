@@ -1,10 +1,15 @@
-                    Building and Installing HTSlib
+                    Building and Installing QPL-HTSLib
                     ==============================
+Note
+====
+
+QPL-HTSLib should build with the same behaviors as HTSLib. As such, the following installation instructions are left unchanged from the main repository. However, installation has only been tested on Linux, so some systems may not work.
+
 
 Requirements
 ============
 
-Building HTSlib requires a few programs and libraries to be present.
+Building QPL-HTSLib requires a few programs and libraries to be present.
 See the "System Specific Details" below for guidance on how to install
 these.
 
@@ -28,7 +33,7 @@ Running the test harness (make test) uses:
     bash
     perl
 
-HTSlib uses the following external libraries.  Building requires both the
+QPL-HTSLib uses the following external libraries.  Building requires both the
 library itself, and include files needed to compile code that uses functions
 from the library.  Note that some Linux distributions put include files in
 a development ('-dev' or '-devel') package separate from the main library.
@@ -43,7 +48,7 @@ a development ('-dev' or '-devel') package separate from the main library.
 Disabling libbzip2 and liblzma will make some CRAM files unreadable, so
 is not recommended.
 
-Using libcurl provides HTSlib with network protocol support, for
+Using libcurl provides QPL-HTSLib with network protocol support, for
 example it enables the use of ftp://, http://, and https:// URLs.
 It is also required if direct access to Amazon S3 or Google Cloud
 Storage is enabled.
@@ -64,7 +69,7 @@ Update htscodecs submodule
 Note that this section only applies to git checkouts.  If you're building
 from a release tar file, you can skip this section.
 
-Some parts of HTSlib are provided by the external "htscodecs" project.  This
+Some parts of QPL-HTSLib are provided by the external "htscodecs" project.  This
 is included as a submodule.  When building from the git repository,
 either clone the project using "git clone --recurse-submodules", or run:
 
@@ -88,7 +93,7 @@ configure script and config.h.in can be built by running:
 Basic Installation
 ==================
 
-To build and install HTSlib, 'cd' to the htslib-1.x directory containing
+To build and install QPL-HTSLib, 'cd' to the QPL-HTSLib-1.x directory containing
 the package's source and type the following commands:
 
     ./configure
@@ -99,10 +104,10 @@ The './configure' command checks your build environment and allows various
 optional functionality to be enabled (see Configuration below).  If you
 don't want to select any optional functionality, you may wish to omit
 configure and just type 'make; make install' as for previous versions
-of HTSlib.  However if the build fails you should run './configure' as
+of QPL-HTSLib.  However if the build fails you should run './configure' as
 it can diagnose the common reasons for build failures.
 
-The 'make' command builds the HTSlib library and various useful
+The 'make' command builds the QPL-HTSLib library and various useful
 utilities: bgzip, htsfile, and tabix.  If compilation fails you should
 run './configure' as it can diagnose problems with your build environment
 that cause build failures.
@@ -119,30 +124,30 @@ Configuration
 
 By default, './configure' examines your build environment, checking for
 requirements such as the zlib development files, and arranges for a plain
-HTSlib build.  The following configure options can be used to enable
+QPL-HTSLib build.  The following configure options can be used to enable
 various features and specify further optional external requirements:
 
 --enable-plugins
     Use plugins to implement exotic file access protocols and other
     specialised facilities.  This enables such facilities to be developed
-    and packaged outwith HTSlib, and somewhat isolates HTSlib-using programs
+    and packaged outwith QPL-HTSLib, and somewhat isolates QPL-HTSLib-using programs
     from their library dependencies.  By default (or with --disable-plugins),
     any enabled pluggable facilities (such as libcurl file access) are built
-    directly within HTSlib.
+    directly within QPL-HTSLib.
 
     Programs that are statically linked to a libhts.a with plugins enabled
     need to be linked using -rdynamic or a similar linker option.
 
-    The <https://github.com/samtools/htslib-plugins> repository contains
+    The <https://github.com/samtools/QPL-HTSLib-plugins> repository contains
     several additional plugins, including the iRODS (<http://irods.org/>)
-    file access plugin previously distributed with HTSlib.
+    file access plugin previously distributed with QPL-HTSLib.
 
 --with-plugin-dir=DIR
-    Specifies the directory into which plugins built while building HTSlib
-    should be installed; by default, LIBEXECDIR/htslib.
+    Specifies the directory into which plugins built while building QPL-HTSLib
+    should be installed; by default, LIBEXECDIR/QPL-HTSLib.
 
 --with-plugin-path=DIR:DIR:DIR...
-    Specifies the list of directories that HTSlib will search for plugins.
+    Specifies the list of directories that QPL-HTSLib will search for plugins.
     By default, only the directory specified via --with-plugin-dir will be
     searched; you can use --with-plugin-path='DIR:$(plugindir):DIR' and so
     on to cause additional directories to be searched.
@@ -168,11 +173,11 @@ various features and specify further optional external requirements:
 
 --disable-bz2
     Bzip2 is an optional compression codec format for CRAM, included
-    in HTSlib by default.  It can be disabled with --disable-bz2, but
+    in QPL-HTSLib by default.  It can be disabled with --disable-bz2, but
     be aware that not all CRAM files may be possible to decode.
 
 --disable-lzma
-    LZMA is an optional compression codec for CRAM, included in HTSlib
+    LZMA is an optional compression codec for CRAM, included in QPL-HTSLib
     by default.  It can be disabled with --disable-lzma, but be aware
     that not all CRAM files may be possible to decode.
 
@@ -194,7 +199,7 @@ for details.  For example,
 
     ./configure CC=icc --prefix=/opt/icc-compiled
 
-would specify that HTSlib is to be built with icc and installed into bin,
+would specify that QPL-HTSLib is to be built with icc and installed into bin,
 lib, etc subdirectories under /opt/icc-compiled.
 
 If dependencies have been installed in non-standard locations (i.e. not on
@@ -211,13 +216,13 @@ collection.
 Installation Locations
 ======================
 
-By default, 'make install' installs HTSlib libraries under /usr/local/lib,
-HTSlib header files under /usr/local/include, utility programs under
+By default, 'make install' installs QPL-HTSLib libraries under /usr/local/lib,
+QPL-HTSLib header files under /usr/local/include, utility programs under
 /usr/local/bin, etc.  (To be precise, the header files are installed within
-a fixed 'htslib' subdirectory under the specified .../include location.)
+a fixed 'QPL-HTSLib' subdirectory under the specified .../include location.)
 
-You can specify a different location to install HTSlib by configuring
-with --prefix=DIR or specify locations for particular parts of HTSlib by
+You can specify a different location to install QPL-HTSLib by configuring
+with --prefix=DIR or specify locations for particular parts of QPL-HTSLib by
 configuring with --libdir=DIR and so on.  Type './configure --help' for
 the full list of such install directory options.
 
@@ -351,7 +356,7 @@ HP-UX
 -----
 
 HP-UX requires that shared libraries have execute permission.  The
-default for HTSlib is to install with permission 644 (read-write for
+default for QPL-HTSLib is to install with permission 644 (read-write for
 owner and read-only for group / other). This can be overridden by
 setting the LIB_PERM variable at install time with:
 
