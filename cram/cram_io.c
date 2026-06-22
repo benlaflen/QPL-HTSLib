@@ -40,6 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #define HTS_BUILDING_LIBRARY // Enables HTSLIB_EXPORT, see htslib/hts_defs.h
+#include "qpl_deflate.h"
 #include <config.h>
 
 #include <stdio.h>
@@ -1057,6 +1058,67 @@ int int32_put_blk(cram_block *b, int32_t val) {
     return -1;
 }
 
+static char *qpl_mem_deflate(char *data, size_t size, size_t *cdata_size,
+                             int level, int strat) {
+    // QPL only has two real levels; map CRAM's level scale onto them.
+    // (strat - Z_FILTERED/Z_RLE/Z_DEFAULT_STRATEGY - has no QPL equivalent,
+    // so GZIP/GZIP_RLE/GZIP_1 all collapse to the same QPL behaviour here.)
+    qpl_level_t qlevel = (level >= 7) ? qpl_high_level : qpl_default_level;
+
+    qpl_deflate_stream stream;
+    if (qpl_deflate_init(&stream, qlevel) != 0) {
+        hts_log_warning("qpl_deflate_init failed in qpl_mem_deflate");
+        return NULL;
+    }
+
+    size_t cdata_alloc = size + size/8 + 256; // same bound used in our QPL bench harness
+    unsigned char *cdata = malloc(cdata_alloc);
+    if (!cdata) {
+        qpl_deflate_end(&stream);
+        return NULL;
+    }
+
+    size_t out_len = 0;
+    int ret = qpl_deflate_run(&stream, (uint8_t *)data, size,
+                              cdata, cdata_alloc, &out_len);
+    qpl_deflate_end(&stream);
+
+    if (ret != 0 || out_len == 0) {
+        hts_log_warning("qpl_deflate_run failed (%d) in qpl_mem_deflate", ret);
+        free(cdata);
+        return NULL;
+    }
+
+    *cdata_size = out_len;
+    return (char *)cdata;
+}
+
+static char *qpl_mem_inflate(char *cdata, size_t csize, size_t *size) {
+    size_t want = *size;
+    unsigned char *data = malloc(want ? want : csize * 2);
+    if (!data)
+        return NULL;
+
+    qpl_deflate_stream stream;
+    if (qpl_deflate_init(&stream, qpl_default_level) == 0) {
+        size_t out_len = 0;
+        int ret = qpl_inflate_run(&stream, (uint8_t *)cdata, csize,
+                                  data, want ? want : csize * 2, &out_len);
+        qpl_deflate_end(&stream);
+        if (ret == 0) {
+            *size = out_len;
+            return (char *)data;
+        }
+        hts_log_warning("qpl_inflate_run failed (%d); falling back to zlib", ret);
+    } else {
+        hts_log_warning("qpl_deflate_init failed; falling back to zlib");
+    }
+
+    free(data);
+    *size = want; // restore caller's size hint for the fallback path
+    return zlib_mem_inflate(cdata, csize, size);
+}
+
 #ifdef HAVE_LIBDEFLATE
 /* ----------------------------------------------------------------------
  * libdeflate compression code, with interface to match
@@ -1600,19 +1662,7 @@ int cram_uncompress_block(cram_block *b) {
 
     case GZIP:
         uncomp_size = b->uncomp_size;
-        uncomp = zlib_mem_inflate((char *)b->data, b->comp_size, &uncomp_size);
-
-        if (!uncomp)
-            return -1;
-        if (uncomp_size != b->uncomp_size) {
-            free(uncomp);
-            return -1;
-        }
-        free(b->data);
-        b->data = (unsigned char *)uncomp;
-        b->alloc = uncomp_size;
-        b->method = RAW;
-        break;
+        uncomp = qpl_mem_inflate((char *)b->data, b->comp_size, &uncomp_size);
 
 #ifdef HAVE_LIBBZ2
     case BZIP2: {
@@ -1757,22 +1807,7 @@ static char *cram_compress_by_method(cram_slice *s, char *in, size_t in_size,
     case GZIP:
     case GZIP_RLE:
     case GZIP_1:
-        // Read names bizarrely benefit from zlib over libdeflate for
-        // mid-range compression levels.  Focusing purely of ratio or
-        // speed, libdeflate still wins.  It also seems to win for
-        // other data series too.
-        //
-        // Eg RN at level 5;  libdeflate=55.9MB  zlib=51.6MB
-#ifdef HAVE_LIBDEFLATE
-#  if (LIBDEFLATE_VERSION_MAJOR < 1 || (LIBDEFLATE_VERSION_MAJOR == 1 && LIBDEFLATE_VERSION_MINOR <= 8))
-        if (content_id == DS_RN && level >= 4 && level <= 7)
-            return zlib_mem_deflate(in, in_size, out_size, level, strat);
-        else
-#  endif
-            return libdeflate_deflate(in, in_size, out_size, level, strat);
-#else
-        return zlib_mem_deflate(in, in_size, out_size, level, strat);
-#endif
+        return qpl_mem_deflate(in, in_size, out_size, level, strat);
 
     case BZIP2: {
 #ifdef HAVE_LIBBZ2
