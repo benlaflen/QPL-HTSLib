@@ -1060,18 +1060,15 @@ int int32_put_blk(cram_block *b, int32_t val) {
 
 static char *qpl_mem_deflate(char *data, size_t size, size_t *cdata_size,
                              int level, int strat) {
-    // QPL only has two real levels; map CRAM's level scale onto them.
-    // (strat - Z_FILTERED/Z_RLE/Z_DEFAULT_STRATEGY - has no QPL equivalent,
-    // so GZIP/GZIP_RLE/GZIP_1 all collapse to the same QPL behaviour here.)
-    qpl_level_t qlevel = (level >= 7) ? qpl_high_level : qpl_default_level;
+    (void)level; (void)strat; // not honoured by this QPL API
 
     qpl_deflate_stream stream;
-    if (qpl_deflate_init(&stream, qlevel) != 0) {
+    if (qpl_deflate_init(&stream) != 0) {
         hts_log_warning("qpl_deflate_init failed in qpl_mem_deflate");
         return NULL;
     }
 
-    size_t cdata_alloc = size + size/8 + 256; // same bound used in our QPL bench harness
+    size_t cdata_alloc = size + size/8 + 256;
     unsigned char *cdata = malloc(cdata_alloc);
     if (!cdata) {
         qpl_deflate_end(&stream);
@@ -1100,7 +1097,7 @@ static char *qpl_mem_inflate(char *cdata, size_t csize, size_t *size) {
         return NULL;
 
     qpl_deflate_stream stream;
-    if (qpl_deflate_init(&stream, qpl_default_level) == 0) {
+    if (qpl_deflate_init(&stream) == 0) {
         size_t out_len = 0;
         int ret = qpl_inflate_run(&stream, (uint8_t *)cdata, csize,
                                   data, want ? want : csize * 2, &out_len);
@@ -1115,7 +1112,7 @@ static char *qpl_mem_inflate(char *cdata, size_t csize, size_t *size) {
     }
 
     free(data);
-    *size = want; // restore caller's size hint for the fallback path
+    *size = want;
     return zlib_mem_inflate(cdata, csize, size);
 }
 
